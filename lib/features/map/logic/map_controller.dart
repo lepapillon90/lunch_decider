@@ -18,17 +18,30 @@ class MapController extends StateNotifier<int> {
     final kakaoUrl = Uri.parse('kakaomap://route?ep=$lat,$lng&by=PUBLICTRANSIT');
 
     try {
-      if (await canLaunchUrl(nmapUrl)) {
-        await launchUrl(nmapUrl);
-      } else if (await canLaunchUrl(kakaoUrl)) {
+      if (await canLaunchUrl(kakaoUrl)) {
         await launchUrl(kakaoUrl);
+      } else if (await canLaunchUrl(nmapUrl)) {
+        await launchUrl(nmapUrl);
       } else {
-        // Fallback to web map or store page
-        // For MVP, just print or show error (UI handling needed)
-        print('No map app installed');
+        final webUrl = Uri.parse('https://map.kakao.com/link/to/$name,$lat,$lng');
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
       }
     } catch (e) {
       print('Navigation launch error: $e');
+    }
+  }
+
+  Future<void> launchDialer(String phone) async {
+    final url = Uri.parse('tel:$phone');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    }
+  }
+
+  Future<void> launchUrlInBrowser(String urlString) async {
+    final url = Uri.parse(urlString);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
     }
   }
 }

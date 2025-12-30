@@ -30,14 +30,27 @@ class KakaoRestaurantRepository implements RestaurantRepository {
       if (response.statusCode == 200) {
         final documents = response.data['documents'] as List;
         return documents.map((doc) {
+          final address = doc['road_address_name'] ?? doc['address_name'] ?? '';
+          
+          // Extract floor from address if possible
+          String? extractedFloor;
+          final floorRegex = RegExp(r'((?:지하\s*)?\d+\s*층)|(?:[B\d]+층)', caseSensitive: false);
+          final match = floorRegex.firstMatch(address);
+          if (match != null) {
+            extractedFloor = match.group(0);
+          }
+
           return Restaurant(
             id: doc['id'] ?? '',
             name: doc['place_name'] ?? '이름 없음',
             category: doc['category_name']?.split('>').last.trim() ?? '기타',
-            imageUrl: '', // 이미지 API는 별도라 비워둠
-            rating: 0.0, // 평점 데이터 없음
+            imageUrl: '', 
+            phone: doc['phone']?.isNotEmpty == true ? doc['phone'] : null,
+            placeUrl: doc['place_url'],
+            floor: extractedFloor,
+            rating: 0.0, 
             distance: (double.tryParse(doc['distance'] ?? '0') ?? 0.0),
-            address: doc['road_address_name'] ?? doc['address_name'] ?? '',
+            address: address,
             latitude: double.tryParse(doc['y'] ?? '0') ?? 0.0,
             longitude: double.tryParse(doc['x'] ?? '0') ?? 0.0,
           );

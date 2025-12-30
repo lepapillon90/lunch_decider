@@ -92,11 +92,38 @@ class RestaurantDetailScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
                 children: [
-                  _buildActionButton(Icons.phone, '전화'),
+                  _buildActionButton(
+                    icon: Icons.phone, 
+                    label: '전화', 
+                    isActive: restaurant.phone != null,
+                    onTap: () {
+                      if (restaurant.phone != null) {
+                        ref.read(mapControllerProvider.notifier).launchDialer(restaurant.phone!);
+                      }
+                    },
+                  ),
                   const SizedBox(width: 12),
-                  _buildActionButton(Icons.directions, '출발'),
+                  _buildActionButton(
+                    icon: Icons.directions, 
+                    label: '출발',
+                    onTap: () {
+                      ref.read(mapControllerProvider.notifier).launchNavigation(
+                        lat: restaurant.latitude,
+                        lng: restaurant.longitude,
+                        name: restaurant.name,
+                      );
+                    },
+                  ),
                   const SizedBox(width: 12),
-                  _buildActionButton(Icons.chat_bubble_outline, '후기'),
+                  _buildActionButton(
+                    icon: Icons.chat_bubble_outline, 
+                    label: '후기',
+                    onTap: () {
+                      if (restaurant.placeUrl != null) {
+                        ref.read(mapControllerProvider.notifier).launchUrlInBrowser(restaurant.placeUrl!);
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
@@ -130,7 +157,9 @@ class RestaurantDetailScreen extends ConsumerWidget {
                     child: MapView(
                       latitude: restaurant.latitude,
                       longitude: restaurant.longitude,
-                      restaurantName: restaurant.name,
+                      restaurantName: restaurant.floor != null 
+                          ? '${restaurant.name} ${restaurant.floor}' 
+                          : restaurant.name,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -148,12 +177,12 @@ class RestaurantDetailScreen extends ConsumerWidget {
             const Divider(thickness: 8, color: Color(0xFFF2F4F6)),
 
             // Info Section
-            const Padding(
+            Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                   const Text(
                     '정보',
                     style: TextStyle(
                       fontSize: 18,
@@ -161,10 +190,26 @@ class RestaurantDetailScreen extends ConsumerWidget {
                       color: Color(0xFF1B1D1F),
                     ),
                   ),
-                  SizedBox(height: 16),
-                  _InfoRow(icon: Icons.access_time, label: '영업 시간', value: '매일 11:30 - 21:00'),
-                  SizedBox(height: 16),
-                  _InfoRow(icon: Icons.phone_android, label: '연락처', value: '02-1234-5678'),
+                  const SizedBox(height: 16),
+                  if (restaurant.floor != null) ...[
+                    _InfoRow(icon: Icons.layers, label: '층수', value: restaurant.floor!),
+                    const SizedBox(height: 16),
+                  ],
+                  _InfoRow(
+                    icon: Icons.access_time, 
+                    label: '영업 시간', 
+                    value: '상세 정보에서 확인',
+                    trailing: restaurant.placeUrl != null ? IconButton(
+                      icon: const Icon(Icons.open_in_new, size: 16),
+                      onPressed: () => ref.read(mapControllerProvider.notifier).launchUrlInBrowser(restaurant.placeUrl!),
+                    ) : null,
+                  ),
+                  const SizedBox(height: 16),
+                  _InfoRow(
+                    icon: Icons.phone_android, 
+                    label: '연락처', 
+                    value: restaurant.phone ?? '정보 없음',
+                  ),
                 ],
               ),
             ),
@@ -211,27 +256,40 @@ class RestaurantDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButton(IconData icon, String label) {
+  Widget _buildActionButton({
+    required IconData icon, 
+    required String label, 
+    VoidCallback? onTap,
+    bool isActive = true,
+  }) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF2F4F6),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: const Color(0xFF4E5968), size: 20),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF4E5968),
-                fontWeight: FontWeight.w600,
+      child: InkWell(
+        onTap: isActive ? onTap : null,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isActive ? const Color(0xFFF2F4F6) : const Color(0xFFF2F4F6).withOpacity(0.5),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon, 
+                color: isActive ? const Color(0xFF4E5968) : const Color(0xFFB1B8C0), 
+                size: 20
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isActive ? const Color(0xFF4E5968) : const Color(0xFFB1B8C0),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -242,41 +300,46 @@ class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final Widget? trailing;
 
   const _InfoRow({
     required this.icon,
     required this.label,
     required this.value,
+    this.trailing,
   });
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Icon(icon, size: 20, color: const Color(0xFFB1B8C0)),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Color(0xFF8B95A1),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF8B95A1),
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 15,
-                color: Color(0xFF4E5968),
-                fontWeight: FontWeight.w500,
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Color(0xFF4E5968),
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        if (trailing != null) trailing!,
       ],
     );
   }
