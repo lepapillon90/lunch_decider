@@ -28,14 +28,16 @@ class _MobileMapViewState extends State<_MobileMapView> {
   void initState() {
     super.initState();
     // Initialize markers
-    markers.add(Marker(
-      markerId: 'target_restaurant',
-      latLng: LatLng(widget.latitude, widget.longitude),
-      width: 30,
-      height: 44,
-      offsetX: 15,
-      offsetY: 44,
-    ));
+    markers.add(
+      Marker(
+        markerId: 'target_restaurant',
+        latLng: LatLng(widget.latitude, widget.longitude),
+        width: 30,
+        height: 44,
+        offsetX: 15,
+        offsetY: 44,
+      ),
+    );
   }
 
   @override

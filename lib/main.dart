@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,8 +12,7 @@ Future<void> main() async {
 
   
   // Kakao Map Initialization
-  // TODO: Replace 'YOUR_JAVASCRIPT_KEY' with your actual Kakao JavaScript Key
-  // Note: This is different from the REST API Key used in repositories.
+  // This plugin is WebView-based and requires the JavaScript Key for all platforms
   AuthRepository.initialize(appKey: 'e232b750f214ced5524f480a11662743');
   
   runApp(const ProviderScope(child: LunchDeciderApp()));
