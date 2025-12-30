@@ -28,16 +28,23 @@ class _WebMapViewState extends State<_WebMapView> {
   @override
   void initState() {
     super.initState();
-    viewId = 'map-canvas-${DateTime.now().millisecondsSinceEpoch}';
+    viewId = 'kakao-map-${DateTime.now().millisecondsSinceEpoch}';
     
-    ui_web.platformViewRegistry.registerViewFactory(viewId, (_) {
+    // Register the view factory
+    ui_web.platformViewRegistry.registerViewFactory(viewId, (int viewId) {
       final div = html.DivElement()
         ..id = 'map-instance-$viewId'
         ..style.width = '100%'
         ..style.height = '100%';
       
+      // Initialize map after delay to ensure DOM is ready
       Future.delayed(const Duration(milliseconds: 500), () {
-        js.context.callMethod('initNaverMap', ['map-instance-$viewId', widget.latitude, widget.longitude]);
+        js.context.callMethod('initKakaoMap', [
+          'map-instance-$viewId', 
+          widget.latitude, 
+          widget.longitude,
+          widget.restaurantName
+        ]);
       });
       
       return div;

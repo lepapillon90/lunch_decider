@@ -31,23 +31,66 @@
 
   <title>점심결정사</title>
   <link rel="manifest" href="manifest.json">
-  <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=vhx2yw8mqw"></script>
+  <script 
+    id="kakao-map-script"
+    type="text/javascript" 
+    src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=e232b750f214ced5524f480a11662743&libraries=services,clusterer"
+    onerror="window.handleScriptError()">
+  </script>
   <script>
-    window.initNaverMap = function(elementId, lat, lng) {
-      if (typeof naver === 'undefined') {
-        console.error("Naver Map SDK not loaded");
-        return;
+    window.handleScriptError = function() {
+        console.error("Failed to load Kakao Map SDK script.");
+    };
+
+    window.initKakaoMap = function(elementId, lat, lng, markerName) {
+      function tryInit(attempts) {
+        if (attempts <= 0) {
+            console.error("Failed to load Kakao Map SDK after multiple attempts.");
+            return;
+        }
+
+        if (typeof kakao === 'undefined' || typeof kakao.maps === 'undefined') {
+          setTimeout(function() { tryInit(attempts - 1); }, 200);
+          return;
+        }
+
+        kakao.maps.load(function() {
+            var container = document.getElementById(elementId);
+            if (!container) return;
+
+            try {
+                var options = {
+                    center: new kakao.maps.LatLng(lat, lng),
+                    level: 3
+                };
+                var map = new kakao.maps.Map(container, options);
+                
+                // Force layout refresh after a moment
+                setTimeout(function() {
+                    map.relayout();
+                    map.setCenter(new kakao.maps.LatLng(lat, lng));
+                }, 500);
+
+                var markerPosition  = new kakao.maps.LatLng(lat, lng); 
+                var marker = new kakao.maps.Marker({
+                    position: markerPosition
+                });
+                marker.setMap(map);
+
+                if (markerName) {
+                    var iwContent = '<div style="padding:5px; white-space:nowrap;">' + markerName + '</div>';
+                    var infowindow = new kakao.maps.InfoWindow({
+                        content : iwContent
+                    });
+                    infowindow.open(map, marker);
+                }
+            } catch (e) {
+                console.error("Kakao Map init error: ", e);
+            }
+        });
       }
-      var mapOptions = {
-        center: new naver.maps.LatLng(lat, lng),
-        zoom: 16
-      };
-      var map = new naver.maps.Map(document.getElementById(elementId), mapOptions);
       
-      new naver.maps.Marker({
-        position: new naver.maps.LatLng(lat, lng),
-        map: map
-      });
+      tryInit(20); 
     }
   </script>
 </head>

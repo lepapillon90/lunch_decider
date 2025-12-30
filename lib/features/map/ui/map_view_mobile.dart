@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_naver_map/flutter_naver_map.dart';
+import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
 Widget getMapView(double latitude, double longitude, String restaurantName) {
   return _MobileMapView(latitude: latitude, longitude: longitude, restaurantName: restaurantName);
 }
 
-class _MobileMapView extends StatelessWidget {
+class _MobileMapView extends StatefulWidget {
   final double latitude;
   final double longitude;
   final String restaurantName;
@@ -17,22 +17,35 @@ class _MobileMapView extends StatelessWidget {
   });
 
   @override
+  State<_MobileMapView> createState() => _MobileMapViewState();
+}
+
+class _MobileMapViewState extends State<_MobileMapView> {
+  KakaoMapController? mapController;
+  Set<Marker> markers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize markers
+    markers.add(Marker(
+      markerId: 'target_restaurant',
+      latLng: LatLng(widget.latitude, widget.longitude),
+      width: 30,
+      height: 44,
+      offsetX: 15,
+      offsetY: 44,
+    ));
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return NaverMap(
-      options: NaverMapViewOptions(
-        initialCameraPosition: NCameraPosition(
-          target: NLatLng(latitude, longitude),
-          zoom: 16,
-        ),
-      ),
-      onMapReady: (controller) {
-        final marker = NMarker(
-          id: 'target_restaurant',
-          position: NLatLng(latitude, longitude),
-          caption: NOverlayCaption(text: restaurantName),
-        );
-        controller.addOverlay(marker);
-      },
+    return KakaoMap(
+      onMapCreated: ((controller) {
+        mapController = controller;
+      }),
+      markers: markers.toList(),
+      center: LatLng(widget.latitude, widget.longitude),
     );
   }
 }
