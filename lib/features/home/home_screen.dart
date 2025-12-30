@@ -57,23 +57,8 @@ class HomeScreen extends ConsumerWidget {
 
 
             // Location Indicator
-            locationAsync.when(
-              data: (position) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                child: Row(
-                  children: [
-                    const Icon(Icons.location_on, size: 16, color: Color(0xFF2377B8)),
-                    const SizedBox(width: 4),
-                    Text(
-                      '현재 위치: ${position.latitude.toStringAsFixed(3)}, ${position.longitude.toStringAsFixed(3)}',
-                      style: const TextStyle(color: Color(0xFF4E5968), fontSize: 13, fontWeight: FontWeight.w500),
-                    ),
-                  ],
-                ),
-              ),
-              loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
-            ),
+            // Location Indicator removed as requested
+
 
             // Category Chips
             SingleChildScrollView(

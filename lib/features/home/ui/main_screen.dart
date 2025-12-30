@@ -22,7 +22,7 @@ class MainScreen extends StatelessWidget {
           Positioned(
             left: 24,
             right: 24,
-            bottom: 34,
+            bottom: 20,
             child: Container(
               height: 64,
               decoration: BoxDecoration(
